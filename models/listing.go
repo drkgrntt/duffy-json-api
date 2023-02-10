@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type ShowListing struct {
+type Listing struct {
 	Id              int       `json:"id,omitempty"`
 	ScannedAt       time.Time `json:"showtime"`
 	PriceRange      string    `json:"priceRange"`
@@ -15,4 +15,12 @@ type ShowListing struct {
 
 	ShowId int   `json:"productionId"`
 	Show   *Show `gorm:"foreignKey:ShowId" json:"show,omitempty"`
+}
+
+// type Tabler interface {
+// 	TableName() string
+// }
+
+func (Listing) TableName() string {
+	return "show_listings"
 }

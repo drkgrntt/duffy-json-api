@@ -13,5 +13,5 @@ type Show struct {
 	ProductionId int         `json:"productionId"`
 	Production   *Production `gorm:"foreignKey:ProductionId" json:"production,omitempty"`
 
-	ShowListings []*ShowListing `gorm:"foreignKey:ShowId" json:"listings,omitempty"`
+	Listings []*Listing `gorm:"foreignKey:ShowId" json:"listings,omitempty"`
 }

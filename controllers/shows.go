@@ -26,7 +26,7 @@ func (c *ShowsController) GetProductions(ctx *gin.Context) {
 		Where("last_scanned_at > ?", pastWeek).
 		Joins("CompetitionGroup").
 		Preload("Shows", "showtime > ? ORDER BY showtime DESC", pastWeek).
-		Preload("Shows.ShowListings", "scanned_at > ? ORDER BY scanned_at DESC", pastWeek).
+		Preload("Shows.Listings", "scanned_at > ? ORDER BY scanned_at DESC", pastWeek).
 		Preload("CompetitionGroup.Productions").
 		Order("last_scanned_at DESC").
 		Order("last_shown_at DESC").
