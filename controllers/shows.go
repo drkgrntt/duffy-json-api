@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/drkgrntt/duffy-json-api/models"
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,18 @@ func NewShowsController(DB *gorm.DB) ShowsController {
 
 func (c *ShowsController) GetProductions(ctx *gin.Context) {
 	var productions []models.Production
-	c.DB.Find(&productions).Where("has_tkts_data = ?", true).Order("last_scanned_at DESC").Order("last_shown_at DESC")
+
+	pastWeek := time.Now().AddDate(0, 0, -7)
+
+	c.DB.Where("has_tkts_data = ?", true).
+		Where("last_scanned_at > ?", pastWeek).
+		Joins("CompetitionGroup").
+		Preload("Shows", "showtime > ? ORDER BY showtime DESC", pastWeek).
+		Preload("Shows.ShowListings", "scanned_at > ? ORDER BY scanned_at DESC", pastWeek).
+		Preload("CompetitionGroup.Productions").
+		Order("last_scanned_at DESC").
+		Order("last_shown_at DESC").
+		Find(&productions)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"productions": productions}})
 }

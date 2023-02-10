@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/drkgrntt/duffy-json-api/controllers"
 	"github.com/drkgrntt/duffy-json-api/database"
@@ -13,9 +12,11 @@ import (
 )
 
 var (
-	server               *gin.Engine
-	ShowsController      controllers.ShowsController
-	ShowsRouteController routes.ShowsRouteController
+	server                 *gin.Engine
+	ShowsController        controllers.ShowsController
+	ShowsRouteController   routes.ShowsRouteController
+	SurveysController      controllers.SurveysController
+	SurveysRouteController routes.SurveyRouteController
 )
 
 func init() {
@@ -25,9 +26,13 @@ func init() {
 	}
 
 	database.ConnectDB(&config)
+	database.ConnectSurveyDB(&config)
 
-	ShowsController = controllers.NewShowsController(database.DB)
+	ShowsController = controllers.NewShowsController(database.GetDatabase())
 	ShowsRouteController = routes.NewRouteShowsController(ShowsController)
+
+	SurveysController = controllers.NewSurveysController(database.GetSurveyDatabase())
+	SurveysRouteController = routes.NewRouteSurveyController(SurveysController)
 
 	log.Println("Server is running in", config.Environment, "mode")
 	if config.Environment == "production" {
@@ -51,13 +56,10 @@ func main() {
 
 	server.Use(cors.New(corsConfig))
 
-	router := server.Group("/api")
-	router.GET("/healthchecker", func(ctx *gin.Context) {
-		message := "Yo, pickem is up and running!"
-		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
-	})
+	router := server.Group("/")
 
 	ShowsRouteController.ShowsRoute(router)
+	SurveysRouteController.SurveyRoute(router)
 
 	log.Fatal(server.Run(":" + config.ServerPort))
 }
