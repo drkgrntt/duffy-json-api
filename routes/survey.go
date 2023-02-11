@@ -15,7 +15,6 @@ func NewRouteSurveyController(surveysController controllers.SurveysController) S
 }
 
 func (c *SurveyRouteController) SurveyRoute(rg *gin.RouterGroup) {
-
 	router := rg.Group("surveys")
 	router.GET("/", c.surveysController.GetSurveyResults)
 }

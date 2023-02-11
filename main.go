@@ -12,11 +12,13 @@ import (
 )
 
 var (
-	server                 *gin.Engine
-	ShowsController        controllers.ShowsController
-	ShowsRouteController   routes.ShowsRouteController
-	SurveysController      controllers.SurveysController
-	SurveysRouteController routes.SurveyRouteController
+	server                     *gin.Engine
+	ShowsController            controllers.ShowsController
+	ShowsRouteController       routes.ShowsRouteController
+	SurveysController          controllers.SurveysController
+	SurveysRouteController     routes.SurveyRouteController
+	HotelPricesController      controllers.HotelPricesController
+	HotelPricesRouteController routes.HotelPricesRouteController
 )
 
 func init() {
@@ -27,12 +29,16 @@ func init() {
 
 	database.ConnectDB(&config)
 	database.ConnectSurveyDB(&config)
+	database.ConnectHpfDB(&config)
 
 	ShowsController = controllers.NewShowsController(database.GetDatabase())
 	ShowsRouteController = routes.NewRouteShowsController(ShowsController)
 
 	SurveysController = controllers.NewSurveysController(database.GetSurveyDatabase())
 	SurveysRouteController = routes.NewRouteSurveyController(SurveysController)
+
+	HotelPricesController = controllers.NewHotelPricesController(database.GetHpfDatabase())
+	HotelPricesRouteController = routes.NewRouteHotelPriceController(HotelPricesController)
 
 	log.Println("Server is running in", config.Environment, "mode")
 	if config.Environment == "production" {
@@ -60,6 +66,7 @@ func main() {
 
 	ShowsRouteController.ShowsRoute(router)
 	SurveysRouteController.SurveyRoute(router)
+	HotelPricesRouteController.HotelPriceRoute(router)
 
 	log.Fatal(server.Run(":" + config.ServerPort))
 }

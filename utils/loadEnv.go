@@ -24,6 +24,11 @@ type Config struct {
 	SurveyDBPassword string `mapstructure:"MYSQL_PASSWORD"`
 	SurveyDBName     string `mapstructure:"MYSQL_DB"`
 	SurveyDBPort     string `mapstructure:"MYSQL_PORT"`
+
+	HpfDBHost     string `mapstructure:MONGO_HOST`
+	HpfDBUser     string `mapstructure:MONGO_USER`
+	HpfDBPassword string `mapstructure:MONGO_PASSWORD`
+	HpfDBName     string `mapstructure:MONGO_DB`
 }
 
 var ConfigInstance Config
@@ -55,6 +60,11 @@ func LoadConfig(path string) (config Config, err error) {
 		SurveyDBPassword: os.Getenv("MYSQL_PASSWORD"),
 		SurveyDBName:     os.Getenv("MYSQL_DB"),
 		SurveyDBPort:     os.Getenv("MYSQL_PORT"),
+
+		HpfDBHost:     os.Getenv("MONGO_HOST"),
+		HpfDBUser:     os.Getenv("MONGO_USER"),
+		HpfDBPassword: os.Getenv("MONGO_PASSWORD"),
+		HpfDBName:     os.Getenv("MONGO_DB"),
 	}
 
 	ConfigInstance = config

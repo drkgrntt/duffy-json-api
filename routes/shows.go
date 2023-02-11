@@ -15,7 +15,6 @@ func NewRouteShowsController(showsController controllers.ShowsController) ShowsR
 }
 
 func (c *ShowsRouteController) ShowsRoute(rg *gin.RouterGroup) {
-
 	router := rg.Group("shows")
 	router.GET("/", c.showsController.GetProductions)
 	// router.GET("/:showsId",  c.showsController.GetShows)
