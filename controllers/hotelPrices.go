@@ -31,7 +31,7 @@ func (c *HotelPriceController) GetThisWeeksAverage(ctx *gin.Context) {
 		dates = append(dates, formatHpfDate(date.AddDate(0, 0, i)))
 	}
 
-	cursor, err := c.DB.Collection("prices").Find(context.TODO(), bson.D{{"date", bson.D{{"$in", dates}}}})
+	cursor, err := c.DB.Collection("prices").Find(context.TODO(), bson.D{{Key: "date", Value: bson.D{{Key: "$in", Value: dates}}}})
 
 	if err != nil {
 		log.Fatal(err)
@@ -64,7 +64,7 @@ func (c *HotelPriceController) GetTodaysAverage(ctx *gin.Context) {
 	date := formatHpfDate(time.Now())
 
 	cursor, err := c.DB.Collection("prices").
-		Find(context.TODO(), bson.D{{"date", date}})
+		Find(context.TODO(), bson.D{{Key: "date", Value: date}})
 
 	if err != nil {
 		log.Fatal(err)
@@ -123,7 +123,7 @@ func (c *HotelPriceController) GetHotelPrices(ctx *gin.Context) {
 		dates = append(dates, formatHpfDate(date.AddDate(0, 0, (-1*i))))
 	}
 
-	cursor, err := c.DB.Collection("prices").Find(context.TODO(), bson.D{{"date", bson.D{{"$in", dates}}}})
+	cursor, err := c.DB.Collection("prices").Find(context.TODO(), bson.D{{Key: "date", Value: bson.D{{Key: "$in", Value: dates}}}})
 	if err != nil {
 		log.Fatal(err)
 	}
