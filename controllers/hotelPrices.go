@@ -13,15 +13,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type HotelPricesController struct {
+type HotelPriceController struct {
 	DB *mongo.Database
 }
 
-func NewHotelPricesController(DB *mongo.Database) HotelPricesController {
-	return HotelPricesController{DB}
+func NewHotelPriceController(DB *mongo.Database) HotelPriceController {
+	return HotelPriceController{DB}
 }
 
-func (c *HotelPricesController) GetThisWeeksAverage(ctx *gin.Context) {
+func (c *HotelPriceController) GetThisWeeksAverage(ctx *gin.Context) {
 	var prices []*models.HotelPrice
 
 	date := time.Now()
@@ -58,7 +58,7 @@ func (c *HotelPricesController) GetThisWeeksAverage(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"prices": prices}})
 }
 
-func (c *HotelPricesController) GetTodaysAverage(ctx *gin.Context) {
+func (c *HotelPriceController) GetTodaysAverage(ctx *gin.Context) {
 	var price models.HotelPrice
 
 	date := formatHpfDate(time.Now())
@@ -88,7 +88,7 @@ func (c *HotelPricesController) GetTodaysAverage(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"price": price}})
 }
 
-func (c *HotelPricesController) GetHotelPrices(ctx *gin.Context) {
+func (c *HotelPriceController) GetHotelPrices(ctx *gin.Context) {
 	days := 7
 	skip := 0
 	var err error

@@ -6,16 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ShowsRouteController struct {
-	showsController controllers.ShowsController
+type ShowRouteController struct {
+	showController controllers.ShowController
 }
 
-func NewRouteShowsController(showsController controllers.ShowsController) ShowsRouteController {
-	return ShowsRouteController{showsController}
+func NewRouteShowController(showController controllers.ShowController) ShowRouteController {
+	return ShowRouteController{showController}
 }
 
-func (c *ShowsRouteController) ShowsRoute(rg *gin.RouterGroup) {
-	router := rg.Group("shows")
-	router.GET("/", c.showsController.GetProductions)
-	// router.GET("/:showsId",  c.showsController.GetShows)
+func (c *ShowRouteController) ShowRoutes(rg *gin.RouterGroup) {
+	router := rg.Group("show")
+	router.GET("/", c.showController.GetProductions)
+	// router.GET("/:showId",  c.showController.GetShow)
 }

@@ -6,15 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type HotelPricesRouteController struct {
-	surveysController controllers.HotelPricesController
+type HotelPriceRouteController struct {
+	surveysController controllers.HotelPriceController
 }
 
-func NewRouteHotelPriceController(surveysController controllers.HotelPricesController) HotelPricesRouteController {
-	return HotelPricesRouteController{surveysController}
+func NewRouteHotelPriceController(surveysController controllers.HotelPriceController) HotelPriceRouteController {
+	return HotelPriceRouteController{surveysController}
 }
 
-func (c *HotelPricesRouteController) HotelPriceRoute(rg *gin.RouterGroup) {
+func (c *HotelPriceRouteController) HotelPriceRoutes(rg *gin.RouterGroup) {
 	router := rg.Group("hotel-prices")
 	router.GET("/", c.surveysController.GetHotelPrices)
 	router.GET("/today", c.surveysController.GetTodaysAverage)

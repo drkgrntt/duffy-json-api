@@ -12,13 +12,13 @@ import (
 )
 
 var (
-	server                     *gin.Engine
-	ShowsController            controllers.ShowsController
-	ShowsRouteController       routes.ShowsRouteController
-	SurveysController          controllers.SurveysController
-	SurveysRouteController     routes.SurveyRouteController
-	HotelPricesController      controllers.HotelPricesController
-	HotelPricesRouteController routes.HotelPricesRouteController
+	server                    *gin.Engine
+	ShowController            controllers.ShowController
+	ShowRouteController       routes.ShowRouteController
+	SurveyController          controllers.SurveyController
+	SurveyRouteController     routes.SurveyRouteController
+	HotelPriceController      controllers.HotelPriceController
+	HotelPriceRouteController routes.HotelPriceRouteController
 )
 
 func init() {
@@ -31,14 +31,14 @@ func init() {
 	database.ConnectSurveyDB(&config)
 	database.ConnectHpfDB(&config)
 
-	ShowsController = controllers.NewShowsController(database.GetDatabase())
-	ShowsRouteController = routes.NewRouteShowsController(ShowsController)
+	ShowController = controllers.NewShowController(database.GetDatabase())
+	ShowRouteController = routes.NewRouteShowController(ShowController)
 
-	SurveysController = controllers.NewSurveysController(database.GetSurveyDatabase())
-	SurveysRouteController = routes.NewRouteSurveyController(SurveysController)
+	SurveyController = controllers.NewSurveyController(database.GetSurveyDatabase())
+	SurveyRouteController = routes.NewRouteSurveyController(SurveyController)
 
-	HotelPricesController = controllers.NewHotelPricesController(database.GetHpfDatabase())
-	HotelPricesRouteController = routes.NewRouteHotelPriceController(HotelPricesController)
+	HotelPriceController = controllers.NewHotelPriceController(database.GetHpfDatabase())
+	HotelPriceRouteController = routes.NewRouteHotelPriceController(HotelPriceController)
 
 	log.Println("Server is running in", config.Environment, "mode")
 	if config.Environment == "production" {
@@ -64,9 +64,9 @@ func main() {
 
 	router := server.Group("/")
 
-	ShowsRouteController.ShowsRoute(router)
-	SurveysRouteController.SurveyRoute(router)
-	HotelPricesRouteController.HotelPriceRoute(router)
+	ShowRouteController.ShowRoutes(router)
+	SurveyRouteController.SurveyRoutes(router)
+	HotelPriceRouteController.HotelPriceRoutes(router)
 
 	log.Fatal(server.Run(":" + config.ServerPort))
 }

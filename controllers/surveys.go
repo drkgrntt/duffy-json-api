@@ -10,15 +10,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type SurveysController struct {
+type SurveyController struct {
 	DB *gorm.DB
 }
 
-func NewSurveysController(DB *gorm.DB) SurveysController {
-	return SurveysController{DB}
+func NewSurveyController(DB *gorm.DB) SurveyController {
+	return SurveyController{DB}
 }
 
-func (c *SurveysController) GetLatestSurveyTimestamp(ctx *gin.Context) {
+func (c *SurveyController) GetLatestSurveyTimestamp(ctx *gin.Context) {
 	var survey models.Survey
 
 	c.DB.Select("primaryId").Order("primaryId DESC").First(&survey)
@@ -26,7 +26,7 @@ func (c *SurveysController) GetLatestSurveyTimestamp(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": survey.Timestamp})
 }
 
-func (c *SurveysController) GetSurveyResults(ctx *gin.Context) {
+func (c *SurveyController) GetSurveyResults(ctx *gin.Context) {
 	days := 7
 	skip := 0
 	var err error

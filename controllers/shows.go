@@ -9,15 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type ShowsController struct {
+type ShowController struct {
 	DB *gorm.DB
 }
 
-func NewShowsController(DB *gorm.DB) ShowsController {
-	return ShowsController{DB}
+func NewShowController(DB *gorm.DB) ShowController {
+	return ShowController{DB}
 }
 
-func (c *ShowsController) GetProductions(ctx *gin.Context) {
+func (c *ShowController) GetProductions(ctx *gin.Context) {
 	var productions []models.Production
 
 	pastWeek := time.Now().AddDate(0, 0, -7)
