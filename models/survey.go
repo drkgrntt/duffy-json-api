@@ -11,6 +11,7 @@ type Survey struct {
 	ShowsPerYear string    `gorm:"column:demo_shows_per_year" json:"showsPerYear"`
 	ShopTkts     string    `gorm:"column:demo_shop_tkts" json:"shopTkts"`
 	Noob         string    `gorm:"column:noob" json:"noob"`
+	Timestamp    time.Time `gorm:"column:primaryId" json:"timestamp"`
 }
 
 type Tabler interface {

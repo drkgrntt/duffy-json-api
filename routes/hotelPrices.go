@@ -17,4 +17,6 @@ func NewRouteHotelPriceController(surveysController controllers.HotelPricesContr
 func (c *HotelPricesRouteController) HotelPriceRoute(rg *gin.RouterGroup) {
 	router := rg.Group("hotel-prices")
 	router.GET("/", c.surveysController.GetHotelPrices)
+	router.GET("/today", c.surveysController.GetTodaysAverage)
+	router.GET("/week", c.surveysController.GetThisWeeksAverage)
 }
