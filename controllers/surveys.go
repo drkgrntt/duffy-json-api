@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/drkgrntt/duffy-json-api/models"
+	"github.com/drkgrntt/duffy-json-api/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -27,27 +27,7 @@ func (c *SurveyController) GetLatestSurveyTimestamp(ctx *gin.Context) {
 }
 
 func (c *SurveyController) GetSurveyResults(ctx *gin.Context) {
-	days := 7
-	skip := 0
-	var err error
-
-	daysQuery := ctx.Query("days")
-	skipQuery := ctx.Query("skip")
-
-	if daysQuery != "" {
-		days, err = strconv.Atoi(daysQuery)
-		if err != nil {
-			days = 7
-			err = nil
-		}
-	}
-	if skipQuery != "" {
-		skip, err = strconv.Atoi(skipQuery)
-		if err != nil {
-			skip = 0
-			err = nil
-		}
-	}
+	days, skip := utils.GetDaysAndSkip(ctx)
 
 	var surveys []models.Survey
 	earliest := time.Now().AddDate(0, 0, (-1 * days))
@@ -58,4 +38,32 @@ func (c *SurveyController) GetSurveyResults(ctx *gin.Context) {
 		Order("demo_date DESC").Find(&surveys)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"surveys": surveys}})
+}
+
+func (c *SurveyController) GetSurveysGroupedByDate(ctx *gin.Context) {
+	days, skip := utils.GetDaysAndSkip(ctx)
+
+	var surveys []models.Survey
+	earliest := time.Now().AddDate(0, 0, (-1 * days))
+	latest := time.Now().AddDate(0, 0, (-1 * skip))
+
+	c.DB.Where("demo_date > ?", earliest).
+		Where("demo_date < ?", latest).
+		Order("demo_date DESC").Find(&surveys)
+
+	response := map[string][]models.Survey{}
+
+	for _, survey := range surveys {
+		val, ok := response[formatSurveyDate(survey.Date)]
+		if !ok {
+			response[formatSurveyDate(survey.Date)] = make([]models.Survey, 0)
+		}
+		response[formatSurveyDate(survey.Date)] = append(val, survey)
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"surveys": response}})
+}
+
+func formatSurveyDate(date time.Time) string {
+	return date.Format("01-02-2006")
 }

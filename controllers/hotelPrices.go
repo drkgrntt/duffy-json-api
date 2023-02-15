@@ -4,10 +4,10 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/drkgrntt/duffy-json-api/models"
+	"github.com/drkgrntt/duffy-json-api/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -89,27 +89,7 @@ func (c *HotelPriceController) GetTodaysAverage(ctx *gin.Context) {
 }
 
 func (c *HotelPriceController) GetHotelPrices(ctx *gin.Context) {
-	days := 7
-	skip := 0
-	var err error
-
-	daysQuery := ctx.Query("days")
-	skipQuery := ctx.Query("skip")
-
-	if daysQuery != "" {
-		days, err = strconv.Atoi(daysQuery)
-		if err != nil {
-			days = 7
-			err = nil
-		}
-	}
-	if skipQuery != "" {
-		skip, err = strconv.Atoi(skipQuery)
-		if err != nil {
-			skip = 0
-			err = nil
-		}
-	}
+	days, skip := utils.GetDaysAndSkip(ctx)
 
 	var prices []*models.HotelPrice
 
