@@ -44,7 +44,7 @@ func (c *SurveyController) GetSurveyResults(ctx *gin.Context) {
 	if skipQuery != "" {
 		skip, err = strconv.Atoi(skipQuery)
 		if err != nil {
-			skip = 7
+			skip = 0
 			err = nil
 		}
 	}
