@@ -40,6 +40,15 @@ func (c *SurveyController) GetSurveyResults(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"surveys": surveys}})
 }
 
+type GetSurveysGroupedByDateResponse struct {
+	FirstBuyer   uint `json:"First Time TKTS Buyer"`
+	ReturnBuyer  uint `json:"Returning TKTS Buyer"`
+	NYC          uint `json:"NYC"`
+	NYCSuburbs   uint `json:"NYC Suburbs"`
+	OtherUS      uint `json:"Other U.S."`
+	OtherCountry uint `json:"Other Country"`
+}
+
 func (c *SurveyController) GetSurveysGroupedByDate(ctx *gin.Context) {
 	days, skip := utils.GetDaysAndSkip(ctx)
 
@@ -51,14 +60,34 @@ func (c *SurveyController) GetSurveysGroupedByDate(ctx *gin.Context) {
 		Where("demo_date < ?", latest).
 		Order("demo_date DESC").Find(&surveys)
 
-	response := map[string][]models.Survey{}
+	response := make(map[string]GetSurveysGroupedByDateResponse)
 
 	for _, survey := range surveys {
-		val, ok := response[formatSurveyDate(survey.Date)]
+		_, ok := response[formatSurveyDate(survey.Date)]
 		if !ok {
-			response[formatSurveyDate(survey.Date)] = make([]models.Survey, 0)
+			response[formatSurveyDate(survey.Date)] = GetSurveysGroupedByDateResponse{}
 		}
-		response[formatSurveyDate(survey.Date)] = append(val, survey)
+		val := response[formatSurveyDate(survey.Date)]
+
+		switch survey.Noob {
+		case "Yes":
+			val.FirstBuyer++
+		case "No":
+			val.ReturnBuyer++
+		}
+
+		switch survey.Residence {
+		case "NYC":
+			val.NYC++
+		case "NYC Suburbs":
+			val.NYCSuburbs++
+		case "Other U.S.":
+			val.OtherUS++
+		case "Other Country":
+			val.OtherCountry++
+		}
+
+		response[formatSurveyDate(survey.Date)] = val
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"surveys": response}})

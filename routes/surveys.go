@@ -18,5 +18,7 @@ func (c *SurveyRouteController) SurveyRoutes(rg *gin.RouterGroup) {
 	router := rg.Group("surveys")
 	router.GET("/", c.surveyController.GetSurveyResults)
 	router.GET("/latest-timestamp", c.surveyController.GetLatestSurveyTimestamp)
-	router.GET("/by-date", c.surveyController.GetSurveysGroupedByDate)
+
+	group := router.Group("tallies")
+	group.GET("/by-date", c.surveyController.GetSurveysGroupedByDate)
 }
