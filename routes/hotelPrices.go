@@ -7,16 +7,16 @@ import (
 )
 
 type HotelPriceRouteController struct {
-	surveysController controllers.HotelPriceController
+	hotelPriceController controllers.HotelPriceController
 }
 
-func NewRouteHotelPriceController(surveysController controllers.HotelPriceController) HotelPriceRouteController {
-	return HotelPriceRouteController{surveysController}
+func NewRouteHotelPriceController(hotelPriceController controllers.HotelPriceController) HotelPriceRouteController {
+	return HotelPriceRouteController{hotelPriceController}
 }
 
 func (c *HotelPriceRouteController) HotelPriceRoutes(rg *gin.RouterGroup) {
 	router := rg.Group("hotel-prices")
-	router.GET("/", c.surveysController.GetHotelPrices)
-	router.GET("/today", c.surveysController.GetTodaysAverage)
-	router.GET("/week", c.surveysController.GetThisWeeksAverage)
+	router.GET("/", c.hotelPriceController.GetHotelPrices)
+	router.GET("/today", c.hotelPriceController.GetTodaysAverage)
+	router.GET("/week", c.hotelPriceController.GetThisWeeksAverage)
 }
