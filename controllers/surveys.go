@@ -41,8 +41,8 @@ func (c *SurveyController) GetSurveyResults(ctx *gin.Context) {
 }
 
 type GetSurveysGroupedByDateResponse struct {
-	FirstBuyer   uint `json:"First Time TKTS Buyer"`
-	ReturnBuyer  uint `json:"Returning TKTS Buyer"`
+	FirstBuyer   uint `json:"First Time"`
+	ReturnBuyer  uint `json:"Returning"`
 	NYC          uint `json:"NYC"`
 	NYCSuburbs   uint `json:"NYC Suburbs"`
 	OtherUS      uint `json:"Other U.S."`
