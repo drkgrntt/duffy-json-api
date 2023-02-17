@@ -63,11 +63,12 @@ func (c *SurveyController) GetSurveysGroupedByDate(ctx *gin.Context) {
 	response := make(map[string]GetSurveysGroupedByDateResponse)
 
 	for _, survey := range surveys {
-		_, ok := response[utils.FormatDate(survey.Date)]
+		date := utils.FormatDate(survey.Date)
+		_, ok := response[date]
 		if !ok {
-			response[utils.FormatDate(survey.Date)] = GetSurveysGroupedByDateResponse{}
+			response[date] = GetSurveysGroupedByDateResponse{}
 		}
-		val := response[utils.FormatDate(survey.Date)]
+		val := response[date]
 
 		switch survey.Noob {
 		case "Yes":
@@ -87,7 +88,7 @@ func (c *SurveyController) GetSurveysGroupedByDate(ctx *gin.Context) {
 			val.OtherCountry++
 		}
 
-		response[utils.FormatDate(survey.Date)] = val
+		response[date] = val
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"surveys": response}})

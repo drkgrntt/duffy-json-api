@@ -16,5 +16,9 @@ func NewRouteDemographicController(demographicController controllers.Demographic
 
 func (c *DemographicRouteController) DemographicRoutes(rg *gin.RouterGroup) {
 	router := rg.Group("demographics")
-	router.GET("/", c.demographicController.GetDemographics)
+
+	group := router.Group("tallies")
+	group.GET("/", c.demographicController.GetTallies)
+	group.GET("/domestic", c.demographicController.GetDomesticTallies)
+	group.GET("/international", c.demographicController.GetInternationalTallies)
 }

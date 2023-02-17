@@ -18,30 +18,32 @@ func NewDemographicController(DB *gorm.DB) DemographicController {
 	return DemographicController{DB}
 }
 
-type GetDemographicsResponse struct {
+type GetTalliesResponse struct {
 	Domestic      uint `json:"domestic"`
 	International uint `json:"international"`
 }
 
-func (c *DemographicController) GetDemographics(ctx *gin.Context) {
+func (c *DemographicController) GetTallies(ctx *gin.Context) {
 	days, skip := utils.GetDaysAndSkip(ctx)
 
 	var analytics []models.Analytic
 	earliest := time.Now().AddDate(0, 0, (-1 * days))
 	latest := time.Now().AddDate(0, 0, (-1 * skip))
 
-	c.DB.Select("country, created_at").Where("created_at > ?", earliest).
+	c.DB.Select("country, created_at").
+		Where("created_at > ?", earliest).
 		Where("created_at < ?", latest).
-		Order("created_at DESC").Find(&analytics)
+		Find(&analytics)
 
-	response := make(map[string]GetDemographicsResponse)
+	response := make(map[string]GetTalliesResponse)
 
 	for _, analytic := range analytics {
-		_, ok := response[utils.FormatDate(analytic.CreatedAt)]
+		date := utils.FormatDate(analytic.CreatedAt)
+		_, ok := response[date]
 		if !ok {
-			response[utils.FormatDate(analytic.CreatedAt)] = GetDemographicsResponse{}
+			response[date] = GetTalliesResponse{}
 		}
-		val := response[utils.FormatDate(analytic.CreatedAt)]
+		val := response[date]
 
 		switch analytic.Country {
 		case "US":
@@ -50,7 +52,69 @@ func (c *DemographicController) GetDemographics(ctx *gin.Context) {
 			val.International++
 		}
 
-		response[utils.FormatDate(analytic.CreatedAt)] = val
+		response[date] = val
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demogrpahics": response}})
+}
+
+func (c *DemographicController) GetDomesticTallies(ctx *gin.Context) {
+	days, skip := utils.GetDaysAndSkip(ctx)
+
+	var analytics []models.Analytic
+	earliest := time.Now().AddDate(0, 0, (-1 * days))
+	latest := time.Now().AddDate(0, 0, (-1 * skip))
+
+	c.DB.Select("state, created_at").
+		Where("country = ?", "US").
+		Where("created_at > ?", earliest).
+		Where("created_at < ?", latest).
+		Find(&analytics)
+
+	response := make(map[string]map[string]uint)
+
+	for _, analytic := range analytics {
+		date := utils.FormatDate(analytic.CreatedAt)
+		_, ok := response[date]
+		if !ok {
+			response[date] = make(map[string]uint)
+		}
+		val := response[date]
+
+		val[analytic.State]++
+
+		response[date] = val
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demogrpahics": response}})
+}
+
+func (c *DemographicController) GetInternationalTallies(ctx *gin.Context) {
+	days, skip := utils.GetDaysAndSkip(ctx)
+
+	var analytics []models.Analytic
+	earliest := time.Now().AddDate(0, 0, (-1 * days))
+	latest := time.Now().AddDate(0, 0, (-1 * skip))
+
+	c.DB.Select("country, created_at").
+		// Where("country != ?", "US").
+		Where("created_at > ?", earliest).
+		Where("created_at < ?", latest).
+		Find(&analytics)
+
+	response := make(map[string]map[string]uint)
+
+	for _, analytic := range analytics {
+		date := utils.FormatDate(analytic.CreatedAt)
+		_, ok := response[date]
+		if !ok {
+			response[date] = make(map[string]uint)
+		}
+		val := response[date]
+
+		val[utils.GetCountryFromCode(analytic.Country)]++
+
+		response[date] = val
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demogrpahics": response}})
