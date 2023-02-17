@@ -55,7 +55,7 @@ func (c *DemographicController) GetTallies(ctx *gin.Context) {
 		response[date] = val
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demogrpahics": response}})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demographics": response}})
 }
 
 func (c *DemographicController) GetDomesticTallies(ctx *gin.Context) {
@@ -86,7 +86,7 @@ func (c *DemographicController) GetDomesticTallies(ctx *gin.Context) {
 		response[date] = val
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demogrpahics": response}})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demographics": response}})
 }
 
 func (c *DemographicController) GetInternationalTallies(ctx *gin.Context) {
@@ -117,5 +117,5 @@ func (c *DemographicController) GetInternationalTallies(ctx *gin.Context) {
 		response[date] = val
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demogrpahics": response}})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demographics": response}})
 }
