@@ -10,7 +10,7 @@ type HotelPriceRouteController struct {
 	hotelPriceController controllers.HotelPriceController
 }
 
-func NewRouteHotelPriceController(hotelPriceController controllers.HotelPriceController) HotelPriceRouteController {
+func NewHotelPriceRouteController(hotelPriceController controllers.HotelPriceController) HotelPriceRouteController {
 	return HotelPriceRouteController{hotelPriceController}
 }
 

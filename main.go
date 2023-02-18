@@ -34,16 +34,16 @@ func init() {
 	database.ConnectHpfDB(&config)
 
 	ShowController = controllers.NewShowController(database.GetDatabase())
-	ShowRouteController = routes.NewRouteShowController(ShowController)
+	ShowRouteController = routes.NewShowRouteController(ShowController)
 
 	SurveyController = controllers.NewSurveyController(database.GetSurveyDatabase())
-	SurveyRouteController = routes.NewRouteSurveyController(SurveyController)
+	SurveyRouteController = routes.NewSurveyRouteController(SurveyController)
 
 	HotelPriceController = controllers.NewHotelPriceController(database.GetHpfDatabase())
-	HotelPriceRouteController = routes.NewRouteHotelPriceController(HotelPriceController)
+	HotelPriceRouteController = routes.NewHotelPriceRouteController(HotelPriceController)
 
 	DemographicController = controllers.NewDemographicController(database.GetDatabase())
-	DemographicRouteController = routes.NewRouteDemographicController(DemographicController)
+	DemographicRouteController = routes.NewDemographicRouteController(DemographicController)
 
 	log.Println("Server is running in", config.Environment, "mode")
 	if config.Environment == "production" {

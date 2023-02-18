@@ -10,12 +10,13 @@ type ShowRouteController struct {
 	showController controllers.ShowController
 }
 
-func NewRouteShowController(showController controllers.ShowController) ShowRouteController {
+func NewShowRouteController(showController controllers.ShowController) ShowRouteController {
 	return ShowRouteController{showController}
 }
 
 func (c *ShowRouteController) ShowRoutes(rg *gin.RouterGroup) {
 	router := rg.Group("show")
 	router.GET("/", c.showController.GetProductions)
-	// router.GET("/:showId",  c.showController.GetShow)
+
+	// tallies := router.Group("tallies")
 }

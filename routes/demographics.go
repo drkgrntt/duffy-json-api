@@ -10,15 +10,15 @@ type DemographicRouteController struct {
 	demographicController controllers.DemographicController
 }
 
-func NewRouteDemographicController(demographicController controllers.DemographicController) DemographicRouteController {
+func NewDemographicRouteController(demographicController controllers.DemographicController) DemographicRouteController {
 	return DemographicRouteController{demographicController}
 }
 
 func (c *DemographicRouteController) DemographicRoutes(rg *gin.RouterGroup) {
 	router := rg.Group("demographics")
 
-	group := router.Group("tallies")
-	group.GET("/", c.demographicController.GetTallies)
-	group.GET("/domestic", c.demographicController.GetDomesticTallies)
-	group.GET("/international", c.demographicController.GetInternationalTallies)
+	tallies := router.Group("tallies")
+	tallies.GET("/", c.demographicController.GetTallies)
+	tallies.GET("/domestic", c.demographicController.GetDomesticTallies)
+	tallies.GET("/international", c.demographicController.GetInternationalTallies)
 }
