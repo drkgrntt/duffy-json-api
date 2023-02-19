@@ -2,7 +2,6 @@ package routes
 
 import (
 	"github.com/drkgrntt/duffy-json-api/controllers"
-	// "github.com/drkgrntt/duffy-json-api/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,8 +14,10 @@ func NewShowRouteController(showController controllers.ShowController) ShowRoute
 }
 
 func (c *ShowRouteController) ShowRoutes(rg *gin.RouterGroup) {
-	router := rg.Group("show")
+	router := rg.Group("shows")
 	router.GET("/", c.showController.GetProductions)
 
-	// tallies := router.Group("tallies")
+	tallies := router.Group("tallies")
+	tallies.GET("/price-ranges", c.showController.GetPriceRanges)
+	tallies.GET("/average-discounts", c.showController.GetAverageDiscounts)
 }

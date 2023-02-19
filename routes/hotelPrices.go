@@ -2,7 +2,6 @@ package routes
 
 import (
 	"github.com/drkgrntt/duffy-json-api/controllers"
-	// "github.com/drkgrntt/duffy-json-api/middleware"
 	"github.com/gin-gonic/gin"
 )
 
