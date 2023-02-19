@@ -36,7 +36,7 @@ type PriceRange struct {
 
 func (l Listing) ParsedPriceRange() PriceRange {
 	pieces := strings.Split(l.PriceRange, "$")
-	prices := strings.Split(pieces[1], "-")
+	prices := strings.Split(pieces[len(pieces)-1], "-")
 	var low float64
 	var high float64
 	var err error
