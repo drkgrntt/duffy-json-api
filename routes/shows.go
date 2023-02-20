@@ -20,4 +20,5 @@ func (c *ShowRouteController) ShowRoutes(rg *gin.RouterGroup) {
 	tallies := router.Group("tallies")
 	tallies.GET("/price-ranges", c.showController.GetPriceRanges)
 	tallies.GET("/average-discounts", c.showController.GetAverageDiscounts)
+	tallies.GET("/percent-perfs-at-tkts", c.showController.GetPercentageAtTkts)
 }
