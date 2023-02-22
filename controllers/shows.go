@@ -54,6 +54,15 @@ func (c *ShowController) GetProductions(ctx *gin.Context) {
 
 func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
 	days, skip := utils.GetDaysAndSkip(ctx)
+	productionIdsQuery := ctx.QueryArray("productionIds")
+	productionIds := make([]int, 0)
+	for _, productionId := range productionIdsQuery {
+		id, err := strconv.Atoi(productionId)
+		if err != nil {
+			continue
+		}
+		productionIds = append(productionIds, id)
+	}
 
 	earliest := time.Now().AddDate(0, 0, (-1 * days))
 	latest := time.Now().AddDate(0, 0, (-1 * skip))
@@ -70,13 +79,30 @@ func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
 
 	for _, show := range shows {
 		date := utils.FormatDate(show.Showtime)
-		_, ok := response[date]
+
+		val, ok := response[date]
 		if !ok {
 			response[date] = make(map[string]models.PriceRange)
+			val = response[date]
+			for _, productionId := range productionIds {
+				prodId := fmt.Sprint(productionId)
+				response[date][prodId] = models.PriceRange{}
+			}
 		}
-		val := response[date]
 
 		all := val["all"]
+		var showRange models.PriceRange
+		isShow := false
+
+		// Handle individual productions
+		for _, productionId := range productionIds {
+			if show.ProductionId != productionId {
+				continue
+			}
+			showRange = val[fmt.Sprint(show.ProductionId)]
+			isShow = true
+		}
+
 		for _, listing := range show.Listings {
 			priceRange := listing.ParsedPriceRange()
 			if all.Low == 0 || all.Low > priceRange.Low {
@@ -85,10 +111,19 @@ func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
 			if all.High < priceRange.High {
 				all.High = priceRange.High
 			}
+
+			if isShow {
+				if showRange.Low == 0 || showRange.Low > priceRange.Low {
+					showRange.Low = priceRange.Low
+				}
+				if showRange.High < priceRange.High {
+					showRange.High = priceRange.High
+				}
+				val[fmt.Sprint(show.ProductionId)] = showRange
+			}
+
 			val["all"] = all
 		}
-
-		// TODO: Handle itemized shows
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"priceRanges": response}})
@@ -96,6 +131,7 @@ func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
 
 func (c *ShowController) GetAverageDiscounts(ctx *gin.Context) {
 	days, skip := utils.GetDaysAndSkip(ctx)
+	productionIds := ctx.QueryArray("productionIds")
 
 	earliest := time.Now().AddDate(0, 0, (-1 * days))
 	latest := time.Now().AddDate(0, 0, (-1 * skip))
@@ -110,25 +146,71 @@ func (c *ShowController) GetAverageDiscounts(ctx *gin.Context) {
 
 	response := make(map[string]map[string]float32)
 
-	var totalDiscount int
-	var totalListings int
+	// Handle individual productions
+	totalsMap := make(map[string]map[string]map[string]int)
 
 	for _, show := range shows {
 		date := utils.FormatDate(show.Showtime)
+
 		_, ok := response[date]
 		if !ok {
 			response[date] = make(map[string]float32)
+			val := response[date]
+			val["all"] = 0
+
+			totalsMap[date] = make(map[string]map[string]int)
+
+			totalsMap[date]["all"] = make(map[string]int)
+			totalsMap[date]["all"]["totalDiscount"] = 0
+			totalsMap[date]["all"]["totalListings"] = 0
+
+			for _, productionId := range productionIds {
+				val[productionId] = 0
+				totalsMap[date][productionId] = make(map[string]int)
+				totalsMap[date][productionId]["totalDiscount"] = 0
+				totalsMap[date][productionId]["totalListings"] = 0
+			}
 		}
-		val := response[date]
+
+		allTotals := totalsMap[date]["all"]
+
+		isShow := false
+		var productionTotals map[string]int
+
+		// Handle individual productions
+		for _, productionId := range productionIds {
+			if fmt.Sprint(show.ProductionId) != productionId {
+				continue
+			}
+			isShow = true
+			productionTotals = totalsMap[date][productionId]
+		}
 
 		for _, listing := range show.Listings {
 			discount, _ := strconv.Atoi(listing.PercentDiscount)
-			totalDiscount += discount
-			totalListings++
-		}
-		val["all"] = float32(totalDiscount) / float32(totalListings)
+			allTotals["totalDiscount"] += discount
+			allTotals["totalListings"]++
 
-		// TODO: Handle itemized shows
+			if isShow {
+				productionTotals["totalDiscount"] += discount
+				productionTotals["totalListings"]++
+			}
+		}
+	}
+
+	for date := range response {
+		totals := totalsMap[date]
+
+		if totals["all"]["totalListings"] != 0 {
+			response[date]["all"] = float32(totals["all"]["totalDiscount"]) / float32(totals["all"]["totalListings"])
+		}
+
+		for _, productionId := range productionIds {
+			if totals[productionId]["totalListings"] == 0 {
+				continue
+			}
+			response[date][productionId] = float32(totals[productionId]["totalDiscount"]) / float32(totals[productionId]["totalListings"])
+		}
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"discounts": response}})
