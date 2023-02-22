@@ -16,6 +16,7 @@ func NewShowRouteController(showController controllers.ShowController) ShowRoute
 func (c *ShowRouteController) ShowRoutes(rg *gin.RouterGroup) {
 	router := rg.Group("shows")
 	router.GET("/", c.showController.GetProductions)
+	router.GET("/names", c.showController.GetNames)
 
 	tallies := router.Group("tallies")
 	tallies.GET("/price-ranges", c.showController.GetPriceRanges)

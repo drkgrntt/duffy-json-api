@@ -52,6 +52,36 @@ func (c *ShowController) GetProductions(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"shows": response}})
 }
 
+func (c *ShowController) GetNames(ctx *gin.Context) {
+	days, skip := utils.GetDaysAndSkip(ctx)
+	earliest := time.Now().AddDate(0, 0, (-1 * days))
+	latest := time.Now().AddDate(0, 0, (-1 * skip))
+
+	var productions []models.Production
+
+	c.DB.Select("id, name").
+		Preload("Shows", "showtime BETWEEN ? AND ?", earliest, latest).
+		Preload("Shows.Listings", "broadway = ?", true).
+		Find(&productions)
+
+	response := make(map[int]string)
+
+	for _, production := range productions {
+		include := false
+		for _, show := range production.Shows {
+			if len(show.Listings) > 0 {
+				include = true
+				break
+			}
+		}
+		if include {
+			response[production.Id] = production.Name
+		}
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"shows": response}})
+}
+
 func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
 	days, skip := utils.GetDaysAndSkip(ctx)
 	productionIdsQuery := ctx.QueryArray("productionIds")
