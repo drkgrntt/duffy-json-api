@@ -1,6 +1,10 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
@@ -16,6 +20,75 @@ type DemographicController struct {
 
 func NewDemographicController(DB *gorm.DB) DemographicController {
 	return DemographicController{DB}
+}
+
+func (c *DemographicController) CreateAnalytic(ctx *gin.Context) {
+	ip := ctx.RemoteIP()
+	// log.Println(ip, ctx.RemoteIP(), ctx.ClientIP())
+	userAgent := ctx.Request.UserAgent()
+	domain := ctx.Request.Referer()
+
+	config := utils.GetConfig()
+
+	url := fmt.Sprintf("https://ipinfo.io/%s?token=%s", ip, config.IpInfoKey)
+	res, err := http.Get(url)
+	if err != nil {
+		log.Fatalln(err)
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatalln(err)
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	var ipData map[string]interface{}
+	err = json.Unmarshal(body, &ipData)
+	if err != nil {
+		log.Fatalln(err)
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	var payload map[string]string
+	if err := ctx.BindJSON(&payload); err != nil {
+		log.Fatalln(err)
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	var country string
+	icountry := ipData["country"]
+	if icountry != nil {
+		country = fmt.Sprint(icountry)
+	}
+	var city string
+	icity := ipData["city"]
+	if icity != nil {
+		city = fmt.Sprint(icity)
+	}
+	var state string
+	istate := ipData["region"]
+	if istate != nil {
+		state = fmt.Sprint(istate)
+	}
+	analytic := models.Analytic{
+		Page:      payload["page"],
+		Query:     payload["query"],
+		UserAgent: userAgent,
+		Country:   country,
+		City:      city,
+		State:     state,
+		Ip:        ip,
+		Domain:    domain,
+	}
+
+	c.DB.Create(&analytic)
+
+	ctx.Status(http.StatusAccepted)
 }
 
 type GetTalliesResponse struct {

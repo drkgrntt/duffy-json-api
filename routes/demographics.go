@@ -15,6 +15,7 @@ func NewDemographicRouteController(demographicController controllers.Demographic
 
 func (c *DemographicRouteController) DemographicRoutes(rg *gin.RouterGroup) {
 	router := rg.Group("demographics")
+	router.POST("/", c.demographicController.CreateAnalytic)
 
 	tallies := router.Group("tallies")
 	tallies.GET("/", c.demographicController.GetTallies)

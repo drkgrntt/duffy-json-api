@@ -12,6 +12,7 @@ type Config struct {
 	Environment string `mapstructure:"ENVIRONMENT"`
 
 	ServerPort string `mapstructure:"PORT"`
+	IpInfoKey  string `mapstructure:"IP_INFO_KEY"`
 
 	DBHost     string `mapstructure:"POSTGRES_HOST"`
 	DBUser     string `mapstructure:"POSTGRES_USER"`
@@ -48,6 +49,7 @@ func LoadConfig(path string) (config Config, err error) {
 		Version:     os.Getenv("VERSION"),
 		Environment: os.Getenv("ENVIRONMENT"),
 		ServerPort:  os.Getenv("PORT"),
+		IpInfoKey:   os.Getenv("IP_INFO_KEY"),
 
 		DBHost:     os.Getenv("POSTGRES_HOST"),
 		DBUser:     os.Getenv("POSTGRES_USER"),
