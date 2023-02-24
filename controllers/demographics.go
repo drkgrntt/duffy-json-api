@@ -23,7 +23,7 @@ func NewDemographicController(DB *gorm.DB) DemographicController {
 }
 
 func (c *DemographicController) CreateAnalytic(ctx *gin.Context) {
-	ip := ctx.RemoteIP()
+	ip := ctx.ClientIP()
 	// log.Println(ip, ctx.RemoteIP(), ctx.ClientIP())
 	userAgent := ctx.Request.UserAgent()
 	domain := ctx.Request.Referer()
