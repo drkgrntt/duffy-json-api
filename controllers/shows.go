@@ -57,6 +57,11 @@ func (c *ShowController) GetNames(ctx *gin.Context) {
 	earliest := time.Now().AddDate(0, 0, (-1 * days))
 	latest := time.Now().AddDate(0, 0, (-1 * skip))
 
+	showType := ctx.Query("type")
+	if showType != "musicals" && showType != "plays" {
+		showType = ""
+	}
+
 	var productions []models.Production
 
 	c.DB.Select("id, name").
@@ -70,7 +75,13 @@ func (c *ShowController) GetNames(ctx *gin.Context) {
 		include := false
 		for _, show := range production.Shows {
 			if len(show.Listings) > 0 {
-				include = true
+				if showType == "plays" {
+					include = show.Listings[0].IsPlayOnly
+				} else if showType == "musicals" {
+					include = !show.Listings[0].IsPlayOnly
+				} else {
+					include = true
+				}
 				break
 			}
 		}
@@ -83,6 +94,11 @@ func (c *ShowController) GetNames(ctx *gin.Context) {
 }
 
 func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
+	showType := ctx.Query("type")
+	if showType != "musicals" && showType != "plays" {
+		showType = ""
+	}
+
 	days, skip := utils.GetDaysAndSkip(ctx)
 	productionIdsQuery := ctx.QueryArray("productionIds")
 	productionIds := make([]int, 0)
@@ -118,6 +134,20 @@ func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
 				prodId := fmt.Sprint(productionId)
 				response[date][prodId] = models.PriceRange{}
 			}
+		}
+
+		include := false
+		if len(show.Listings) > 0 {
+			if showType == "plays" {
+				include = show.Listings[0].IsPlayOnly
+			} else if showType == "musicals" {
+				include = !show.Listings[0].IsPlayOnly
+			} else {
+				include = true
+			}
+		}
+		if !include {
+			continue
 		}
 
 		all := val["all"]
@@ -160,6 +190,11 @@ func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
 }
 
 func (c *ShowController) GetAverageDiscounts(ctx *gin.Context) {
+	showType := ctx.Query("type")
+	if showType != "musicals" && showType != "plays" {
+		showType = ""
+	}
+
 	days, skip := utils.GetDaysAndSkip(ctx)
 	productionIds := ctx.QueryArray("productionIds")
 
@@ -200,6 +235,20 @@ func (c *ShowController) GetAverageDiscounts(ctx *gin.Context) {
 				totalsMap[date][productionId]["totalDiscount"] = 0
 				totalsMap[date][productionId]["totalListings"] = 0
 			}
+		}
+
+		include := false
+		if len(show.Listings) > 0 {
+			if showType == "plays" {
+				include = show.Listings[0].IsPlayOnly
+			} else if showType == "musicals" {
+				include = !show.Listings[0].IsPlayOnly
+			} else {
+				include = true
+			}
+		}
+		if !include {
+			continue
 		}
 
 		allTotals := totalsMap[date]["all"]
