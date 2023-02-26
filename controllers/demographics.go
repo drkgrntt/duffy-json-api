@@ -89,8 +89,8 @@ func (c *DemographicController) CreateAnalytic(ctx *gin.Context) {
 
 	c.DB.Create(&analytic)
 
-	// ctx.Status(http.StatusAccepted)
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"info": analytic}})
+	ctx.Status(http.StatusAccepted)
+	// ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"info": analytic}})
 }
 
 type GetTalliesResponse struct {
