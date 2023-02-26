@@ -2,8 +2,10 @@ package utils
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/now"
 )
 
 func GetDaysAndSkip(ctx *gin.Context) (int, int) {
@@ -30,4 +32,18 @@ func GetDaysAndSkip(ctx *gin.Context) (int, int) {
 	}
 
 	return days, skip
+}
+
+func GetEarliestAndLatest(ctx *gin.Context) (earliest time.Time, latest time.Time) {
+	days, skip := GetDaysAndSkip(ctx)
+
+	location, _ := time.LoadLocation("America/New_York")
+
+	earliest = now.BeginningOfDay().In(location)
+	latest = now.EndOfDay().In(location)
+
+	earliest = earliest.AddDate(0, 0, (-1 * (days - 1)))
+	latest = latest.AddDate(0, 0, (-1 * skip))
+
+	return
 }

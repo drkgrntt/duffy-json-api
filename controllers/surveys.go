@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -27,13 +28,13 @@ func (c *SurveyController) GetLatestSurveyTimestamp(ctx *gin.Context) {
 }
 
 func (c *SurveyController) GetSurveyResults(ctx *gin.Context) {
-	days, skip := utils.GetDaysAndSkip(ctx)
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
+
+	fmt.Println(earliest, latest)
 
 	var surveys []models.Survey
-	earliest := time.Now().AddDate(0, 0, (-1 * days))
-	latest := time.Now().AddDate(0, 0, (-1 * skip))
 
-	c.DB.Where("demo_date > ?", earliest).
+	c.DB.Where("demo_date >= ?", earliest).
 		Where("demo_date < ?", latest).
 		Order("demo_date DESC").Find(&surveys)
 
