@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/drkgrntt/duffy-json-api/models"
@@ -134,25 +135,23 @@ func (c *DemographicController) GetTallies(ctx *gin.Context) {
 }
 
 func (c *DemographicController) GetDomesticTallies(ctx *gin.Context) {
-	days, skip := utils.GetDaysAndSkip(ctx)
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
 
 	var analytics []models.Analytic
-	earliest := time.Now().AddDate(0, 0, (-1 * days))
-	latest := time.Now().AddDate(0, 0, (-1 * skip))
 
 	c.DB.Select("state, created_at").
 		Where("country = ?", "US").
-		Where("created_at > ?", earliest).
+		Where("created_at >= ?", earliest).
 		Where("created_at < ?", latest).
 		Find(&analytics)
 
-	response := make(map[string]map[string]uint)
+	response := make(map[string]map[string]int)
 
 	for _, analytic := range analytics {
 		date := utils.FormatDate(analytic.CreatedAt)
 		_, ok := response[date]
 		if !ok {
-			response[date] = make(map[string]uint)
+			response[date] = make(map[string]int)
 		}
 		val := response[date]
 
@@ -161,35 +160,87 @@ func (c *DemographicController) GetDomesticTallies(ctx *gin.Context) {
 		response[date] = val
 	}
 
+	var shareThreshold int
+	shareThresholdQuery := ctx.Query("threshold")
+	if shareThresholdQuery != "" {
+		num, err := strconv.Atoi(shareThresholdQuery)
+		shareThreshold = num
+		if err != nil {
+			shareThreshold = 0
+			err = nil
+		}
+	}
+
+	if shareThreshold > 0 {
+		for date, info := range response {
+			total := 0
+			for _, count := range info {
+				total += count
+			}
+
+			for state, count := range info {
+				share := (float32(count) / float32(total)) * 100
+				if share < float32(shareThreshold) {
+					delete(response[date], state)
+				}
+			}
+		}
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demographics": response}})
 }
 
 func (c *DemographicController) GetInternationalTallies(ctx *gin.Context) {
-	days, skip := utils.GetDaysAndSkip(ctx)
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
 
 	var analytics []models.Analytic
-	earliest := time.Now().AddDate(0, 0, (-1 * days))
-	latest := time.Now().AddDate(0, 0, (-1 * skip))
 
 	c.DB.Select("country, created_at").
-		// Where("country != ?", "US").
-		Where("created_at > ?", earliest).
+		Where("country != ?", "US").
+		Where("created_at >= ?", earliest).
 		Where("created_at < ?", latest).
 		Find(&analytics)
 
-	response := make(map[string]map[string]uint)
+	response := make(map[string]map[string]int)
 
 	for _, analytic := range analytics {
 		date := utils.FormatDate(analytic.CreatedAt)
 		_, ok := response[date]
 		if !ok {
-			response[date] = make(map[string]uint)
+			response[date] = make(map[string]int)
 		}
 		val := response[date]
 
 		val[utils.GetCountryFromCode(analytic.Country)]++
 
 		response[date] = val
+	}
+
+	var shareThreshold int
+	shareThresholdQuery := ctx.Query("threshold")
+	if shareThresholdQuery != "" {
+		num, err := strconv.Atoi(shareThresholdQuery)
+		shareThreshold = num
+		if err != nil {
+			shareThreshold = 0
+			err = nil
+		}
+	}
+
+	if shareThreshold > 0 {
+		for date, info := range response {
+			total := 0
+			for _, count := range info {
+				total += count
+			}
+
+			for country, count := range info {
+				share := (float32(count) / float32(total)) * 100
+				if share < float32(shareThreshold) {
+					delete(response[date], country)
+				}
+			}
+		}
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"demographics": response}})
