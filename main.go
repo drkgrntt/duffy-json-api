@@ -15,6 +15,8 @@ var (
 	server                     *gin.Engine
 	ShowController             controllers.ShowController
 	ShowRouteController        routes.ShowRouteController
+	SalesController            controllers.SalesController
+	SalesRouteController       routes.SalesRouteController
 	SurveyController           controllers.SurveyController
 	SurveyRouteController      routes.SurveyRouteController
 	HotelPriceController       controllers.HotelPriceController
@@ -35,6 +37,9 @@ func init() {
 
 	ShowController = controllers.NewShowController(database.GetDatabase())
 	ShowRouteController = routes.NewShowRouteController(ShowController)
+
+	SalesController = controllers.NewSalesController(database.GetDatabase())
+	SalesRouteController = routes.NewSalesRouteController(SalesController)
 
 	SurveyController = controllers.NewSurveyController(database.GetSurveyDatabase())
 	SurveyRouteController = routes.NewSurveyRouteController(SurveyController)
@@ -70,6 +75,7 @@ func main() {
 	router := server.Group("/")
 
 	ShowRouteController.ShowRoutes(router)
+	SalesRouteController.SalesRoutes(router)
 	SurveyRouteController.SurveyRoutes(router)
 	HotelPriceRouteController.HotelPriceRoutes(router)
 	DemographicRouteController.DemographicRoutes(router)
