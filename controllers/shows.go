@@ -53,9 +53,7 @@ func (c *ShowController) GetProductions(ctx *gin.Context) {
 }
 
 func (c *ShowController) GetNames(ctx *gin.Context) {
-	days, skip := utils.GetDaysAndSkip(ctx)
-	earliest := time.Now().AddDate(0, 0, (-1 * days))
-	latest := time.Now().AddDate(0, 0, (-1 * skip))
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
 
 	showType := ctx.Query("type")
 	if showType != "musicals" && showType != "plays" {
@@ -93,13 +91,17 @@ func (c *ShowController) GetNames(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"shows": response}})
 }
 
-func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
+// =============================================== //
+//                     Tallies                     //
+// =============================================== //
+
+func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 	showType := ctx.Query("type")
 	if showType != "musicals" && showType != "plays" {
 		showType = ""
 	}
 
-	days, skip := utils.GetDaysAndSkip(ctx)
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
 	productionIdsQuery := ctx.QueryArray("productionIds")
 	productionIds := make([]int, 0)
 	for _, productionId := range productionIdsQuery {
@@ -109,9 +111,6 @@ func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
 		}
 		productionIds = append(productionIds, id)
 	}
-
-	earliest := time.Now().AddDate(0, 0, (-1 * days))
-	latest := time.Now().AddDate(0, 0, (-1 * skip))
 
 	var shows []models.Show
 
@@ -189,17 +188,14 @@ func (c *ShowController) GetPriceRanges(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"priceRanges": response}})
 }
 
-func (c *ShowController) GetAverageDiscounts(ctx *gin.Context) {
+func (c *ShowController) GetAverageDiscountTallies(ctx *gin.Context) {
 	showType := ctx.Query("type")
 	if showType != "musicals" && showType != "plays" {
 		showType = ""
 	}
 
-	days, skip := utils.GetDaysAndSkip(ctx)
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
 	productionIds := ctx.QueryArray("productionIds")
-
-	earliest := time.Now().AddDate(0, 0, (-1 * days))
-	latest := time.Now().AddDate(0, 0, (-1 * skip))
 
 	var shows []models.Show
 
@@ -295,11 +291,8 @@ func (c *ShowController) GetAverageDiscounts(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"discounts": response}})
 }
 
-func (c *ShowController) GetPercentageAtTkts(ctx *gin.Context) {
-	days, skip := utils.GetDaysAndSkip(ctx)
-
-	earliest := time.Now().AddDate(0, 0, (-1 * days))
-	latest := time.Now().AddDate(0, 0, (-1 * skip))
+func (c *ShowController) GetPercentageAtTktsTallies(ctx *gin.Context) {
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
 
 	var shows []models.Show
 	var grosses []models.Gross
