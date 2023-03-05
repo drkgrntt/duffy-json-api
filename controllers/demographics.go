@@ -175,8 +175,8 @@ func (c *DemographicController) GetDomesticTallies(ctx *gin.Context) {
 			}
 
 			for state, count := range info {
-				share := (float32(count) / float32(total)) * 100
-				if share < float32(shareThreshold) {
+				share := (float64(count) / float64(total)) * 100
+				if share < float64(shareThreshold) {
 					delete(response[date], state)
 				}
 			}
@@ -231,8 +231,8 @@ func (c *DemographicController) GetInternationalTallies(ctx *gin.Context) {
 			}
 
 			for country, count := range info {
-				share := (float32(count) / float32(total)) * 100
-				if share < float32(shareThreshold) {
+				share := (float64(count) / float64(total)) * 100
+				if share < float64(shareThreshold) {
 					delete(response[date], country)
 				}
 			}

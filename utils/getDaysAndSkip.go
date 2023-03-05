@@ -8,6 +8,58 @@ import (
 	"github.com/jinzhu/now"
 )
 
+func GetMinAndMaxPrice(ctx *gin.Context) (float64, float64) {
+	min := 0.0
+	max := 290.0
+	var err error
+
+	minQuery := ctx.Query("minPrice")
+	maxQuery := ctx.Query("maxPrice")
+
+	if minQuery != "" {
+		min, err = strconv.ParseFloat(minQuery, 64)
+		if err != nil {
+			min = 0.0
+			err = nil
+		}
+	}
+	if maxQuery != "" {
+		max, err = strconv.ParseFloat(maxQuery, 64)
+		if err != nil {
+			max = 290.0
+			err = nil
+		}
+	}
+
+	return min, max
+}
+
+func GetMinAndMaxDiscount(ctx *gin.Context) (float64, float64) {
+	min := 0.0
+	max := 50.0
+	var err error
+
+	minQuery := ctx.Query("minDiscount")
+	maxQuery := ctx.Query("maxDiscount")
+
+	if minQuery != "" {
+		min, err = strconv.ParseFloat(minQuery, 64)
+		if err != nil {
+			min = 0.0
+			err = nil
+		}
+	}
+	if maxQuery != "" {
+		max, err = strconv.ParseFloat(maxQuery, 64)
+		if err != nil {
+			max = 50.0
+			err = nil
+		}
+	}
+
+	return min, max
+}
+
 func GetDaysAndSkip(ctx *gin.Context) (int, int) {
 	days := 7
 	skip := 0

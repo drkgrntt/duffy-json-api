@@ -245,7 +245,7 @@ func (c *ShowController) GetAverageDiscountTallies(ctx *gin.Context) {
 		Preload("Listings", "broadway = ?", true).
 		Find(&shows)
 
-	response := make(map[string]map[string]float32)
+	response := make(map[string]map[string]float64)
 
 	// Handle individual productions
 	totalsMap := make(map[string]map[string]map[string]int)
@@ -255,7 +255,7 @@ func (c *ShowController) GetAverageDiscountTallies(ctx *gin.Context) {
 
 		_, ok := response[date]
 		if !ok {
-			response[date] = make(map[string]float32)
+			response[date] = make(map[string]float64)
 			val := response[date]
 			val["all"] = 0
 
@@ -317,14 +317,14 @@ func (c *ShowController) GetAverageDiscountTallies(ctx *gin.Context) {
 		totals := totalsMap[date]
 
 		if totals["all"]["totalListings"] != 0 {
-			response[date]["all"] = float32(totals["all"]["totalDiscount"]) / float32(totals["all"]["totalListings"])
+			response[date]["all"] = float64(totals["all"]["totalDiscount"]) / float64(totals["all"]["totalListings"])
 		}
 
 		for _, productionId := range productionIds {
 			if totals[productionId]["totalListings"] == 0 {
 				continue
 			}
-			response[date][productionId] = float32(totals[productionId]["totalDiscount"]) / float32(totals[productionId]["totalListings"])
+			response[date][productionId] = float64(totals[productionId]["totalDiscount"]) / float64(totals[productionId]["totalListings"])
 		}
 	}
 
@@ -351,7 +351,7 @@ func (c *ShowController) GetPercentageAtTktsTallies(ctx *gin.Context) {
 		tmp[gross.WeekEndDate] += gross.Performances
 	}
 
-	response := make(map[string]float32)
+	response := make(map[string]float64)
 	for weekEndDate, total := range tmp {
 		start := now.With(weekEndDate).BeginningOfWeek()
 		end := now.With(weekEndDate).EndOfWeek()
@@ -367,7 +367,7 @@ func (c *ShowController) GetPercentageAtTktsTallies(ctx *gin.Context) {
 			}
 		}
 
-		percentage := float32(len(showsInRange)) / float32(total)
+		percentage := float64(len(showsInRange)) / float64(total)
 		response[label] = percentage * 100
 	}
 

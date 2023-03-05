@@ -9,7 +9,7 @@ type TktsSalesDay struct {
 	Date        time.Time `json:"date"`
 	Location    string    `json:"location"`
 	TicketsSold int       `json:"ticketsSold"`
-	SalesTotal  float32   `json:"salesTotal"`
+	SalesTotal  float64   `json:"salesTotal"`
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updatedAt"`
 }
