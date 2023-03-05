@@ -12,7 +12,8 @@ func ForEach[
 }
 
 func Map[
-	InputType interface{}, OutputType interface{},
+	InputType interface{},
+	OutputType interface{},
 ](
 	slice []InputType,
 	callback func(item InputType, index int, slice []InputType) OutputType,
@@ -39,6 +40,21 @@ func Filter[
 		}
 	}
 	return result
+}
+
+func Some[
+	Type interface{},
+](
+	slice []Type,
+	callback func(item Type, index int, slice []Type) bool,
+) bool {
+	for index, item := range slice {
+		matchesCondition := callback(item, index, slice)
+		if matchesCondition {
+			return true
+		}
+	}
+	return false
 }
 
 func Reduce[

@@ -95,6 +95,35 @@ func (c *ShowController) GetNames(ctx *gin.Context) {
 //                     Tallies                     //
 // =============================================== //
 
+func (c *ShowController) GetPerformanceTallies(ctx *gin.Context) {
+	showType := ctx.Query("type")
+	if showType != "musicals" && showType != "plays" {
+		showType = ""
+	}
+
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
+
+	var productions []models.Production
+
+	c.DB.
+		Preload("Shows", "showtime >= ? AND showtime < ?", earliest, latest).
+		Preload("Shows.Listings", "broadway = ?", true).
+		Find(&productions)
+
+	broadwayProductions := utils.Filter(productions, func(production models.Production, i int, slice []models.Production) bool {
+		return utils.Some(production.Shows, func(show *models.Show, j int, shows []*models.Show) bool {
+			return len(show.Listings) > 0
+		})
+	})
+
+	response := utils.Reduce(broadwayProductions, func(acc map[string]int, production models.Production, i int, slice []models.Production) map[string]int {
+		acc[production.Name] = len(production.Shows)
+		return acc
+	}, make(map[string]int))
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"performances": response}})
+}
+
 func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 	showType := ctx.Query("type")
 	if showType != "musicals" && showType != "plays" {
