@@ -116,6 +116,17 @@ func (c *ShowController) GetPerformanceTallies(ctx *gin.Context) {
 		})
 	})
 
+	if showType != "" {
+		broadwayProductions = utils.Filter(broadwayProductions, func(production models.Production, i int, slice []models.Production) bool {
+			isPlay := production.Shows[0].Listings[0].IsPlayOnly
+			if showType == "plays" {
+				return isPlay
+			} else {
+				return !isPlay
+			}
+		})
+	}
+
 	response := utils.Reduce(broadwayProductions, func(acc map[string]int, production models.Production, i int, slice []models.Production) map[string]int {
 		acc[production.Name] = len(production.Shows)
 		return acc
