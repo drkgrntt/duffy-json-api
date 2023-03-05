@@ -14,10 +14,6 @@ type Survey struct {
 	Timestamp    time.Time `gorm:"column:primaryId" json:"timestamp"`
 }
 
-type Tabler interface {
-	TableName() string
-}
-
 func (Survey) TableName() string {
 	return "demo_survey"
 }

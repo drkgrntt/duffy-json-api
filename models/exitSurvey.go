@@ -15,10 +15,6 @@ type ExitSurvey struct {
 	Timestamp time.Time `gorm:"column:primaryId" json:"timestamp"`
 }
 
-// type Tabler interface {
-// 	TableName() string
-// }
-
 func (ExitSurvey) TableName() string {
 	return "demo_exit"
 }

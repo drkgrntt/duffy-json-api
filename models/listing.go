@@ -21,10 +21,6 @@ type Listing struct {
 	Show   *Show `gorm:"foreignKey:ShowId" json:"show,omitempty"`
 }
 
-// type Tabler interface {
-// 	TableName() string
-// }
-
 func (Listing) TableName() string {
 	return "show_listings"
 }
@@ -50,4 +46,31 @@ func (l Listing) ParsedPriceRange() PriceRange {
 	}
 	priceRange := PriceRange{low, high}
 	return priceRange
+}
+
+func (l Listing) IsWithinParams(
+	minPrice float64,
+	maxPrice float64,
+	minDiscount float64,
+	maxDiscount float64,
+) bool {
+	priceRange := l.ParsedPriceRange()
+	if float64(priceRange.High) > maxPrice {
+		return false
+	}
+
+	if float64(priceRange.Low) < minPrice {
+		return false
+	}
+
+	discount, _ := strconv.ParseFloat(l.PercentDiscount, 64)
+	if discount > maxDiscount {
+		return false
+	}
+
+	if discount < minDiscount {
+		return false
+	}
+
+	return true
 }

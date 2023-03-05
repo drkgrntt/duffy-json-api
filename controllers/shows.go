@@ -60,6 +60,9 @@ func (c *ShowController) GetNames(ctx *gin.Context) {
 		showType = ""
 	}
 
+	minPrice, maxPrice := utils.GetMinAndMaxPrice(ctx)
+	minDiscount, maxDiscount := utils.GetMinAndMaxDiscount(ctx)
+
 	var productions []models.Production
 
 	c.DB.Select("id, name").
@@ -68,6 +71,14 @@ func (c *ShowController) GetNames(ctx *gin.Context) {
 		Find(&productions)
 
 	response := make(map[int]string)
+
+	utils.ForEach(productions, func(production models.Production, i int, slice []models.Production) {
+		utils.ForEach(production.Shows, func(show *models.Show, j int, shows []*models.Show) {
+			show.Listings = utils.Filter(show.Listings, func(listing *models.Listing, x int, listings []*models.Listing) bool {
+				return listing.IsWithinParams(minPrice, maxPrice, minDiscount, maxDiscount)
+			})
+		})
+	})
 
 	for _, production := range productions {
 		include := false
@@ -102,6 +113,8 @@ func (c *ShowController) GetPerformanceTallies(ctx *gin.Context) {
 	}
 
 	earliest, latest := utils.GetEarliestAndLatest(ctx)
+	minPrice, maxPrice := utils.GetMinAndMaxPrice(ctx)
+	minDiscount, maxDiscount := utils.GetMinAndMaxDiscount(ctx)
 
 	var productions []models.Production
 
@@ -109,6 +122,14 @@ func (c *ShowController) GetPerformanceTallies(ctx *gin.Context) {
 		Preload("Shows", "showtime >= ? AND showtime < ?", earliest, latest).
 		Preload("Shows.Listings", "broadway = ?", true).
 		Find(&productions)
+
+	utils.ForEach(productions, func(production models.Production, i int, slice []models.Production) {
+		utils.ForEach(production.Shows, func(show *models.Show, j int, shows []*models.Show) {
+			show.Listings = utils.Filter(show.Listings, func(listing *models.Listing, x int, listings []*models.Listing) bool {
+				return listing.IsWithinParams(minPrice, maxPrice, minDiscount, maxDiscount)
+			})
+		})
+	})
 
 	broadwayProductions := utils.Filter(productions, func(production models.Production, i int, slice []models.Production) bool {
 		return utils.Some(production.Shows, func(show *models.Show, j int, shows []*models.Show) bool {
@@ -152,6 +173,9 @@ func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 		productionIds = append(productionIds, id)
 	}
 
+	minPrice, maxPrice := utils.GetMinAndMaxPrice(ctx)
+	minDiscount, maxDiscount := utils.GetMinAndMaxDiscount(ctx)
+
 	var shows []models.Show
 
 	c.DB.Where("showtime > ?", earliest).
@@ -163,6 +187,10 @@ func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 	response := make(map[string]map[string]models.PriceRange)
 
 	for _, show := range shows {
+		show.Listings = utils.Filter(show.Listings, func(listing *models.Listing, i int, listings []*models.Listing) bool {
+			return listing.IsWithinParams(minPrice, maxPrice, minDiscount, maxDiscount)
+		})
+
 		date := utils.FormatDate(show.Showtime)
 
 		val, ok := response[date]
@@ -237,6 +265,9 @@ func (c *ShowController) GetAverageDiscountTallies(ctx *gin.Context) {
 	earliest, latest := utils.GetEarliestAndLatest(ctx)
 	productionIds := ctx.QueryArray("productionIds")
 
+	minPrice, maxPrice := utils.GetMinAndMaxPrice(ctx)
+	minDiscount, maxDiscount := utils.GetMinAndMaxDiscount(ctx)
+
 	var shows []models.Show
 
 	c.DB.Where("showtime > ?", earliest).
@@ -251,6 +282,10 @@ func (c *ShowController) GetAverageDiscountTallies(ctx *gin.Context) {
 	totalsMap := make(map[string]map[string]map[string]int)
 
 	for _, show := range shows {
+		show.Listings = utils.Filter(show.Listings, func(listing *models.Listing, i int, listings []*models.Listing) bool {
+			return listing.IsWithinParams(minPrice, maxPrice, minDiscount, maxDiscount)
+		})
+
 		date := utils.FormatDate(show.Showtime)
 
 		_, ok := response[date]
