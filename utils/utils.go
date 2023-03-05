@@ -57,6 +57,22 @@ func Some[
 	return false
 }
 
+func Find[
+	Type interface{},
+](
+	slice []Type,
+	callback func(item Type, index int, slice []Type) bool,
+) Type {
+	for index, item := range slice {
+		matchesCondition := callback(item, index, slice)
+		if matchesCondition {
+			return item
+		}
+	}
+	var result Type
+	return result
+}
+
 func Reduce[
 	InputType interface{},
 	OutputType interface{},
