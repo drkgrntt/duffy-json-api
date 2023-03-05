@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/drkgrntt/duffy-json-api/models"
 	"github.com/drkgrntt/duffy-json-api/utils"
@@ -51,11 +50,8 @@ type GetSurveysGroupedByDateResponse struct {
 }
 
 func (c *SurveyController) GetSurveysGroupedByDate(ctx *gin.Context) {
-	days, skip := utils.GetDaysAndSkip(ctx)
-
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
 	var surveys []models.Survey
-	earliest := time.Now().AddDate(0, 0, (-1 * days))
-	latest := time.Now().AddDate(0, 0, (-1 * skip))
 
 	c.DB.Where("demo_date > ?", earliest).
 		Where("demo_date < ?", latest).

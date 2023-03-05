@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/drkgrntt/duffy-json-api/models"
 	"github.com/drkgrntt/duffy-json-api/utils"
@@ -100,11 +99,8 @@ type GetTalliesResponse struct {
 }
 
 func (c *DemographicController) GetTallies(ctx *gin.Context) {
-	days, skip := utils.GetDaysAndSkip(ctx)
-
+	earliest, latest := utils.GetEarliestAndLatest(ctx)
 	var analytics []models.Analytic
-	earliest := time.Now().AddDate(0, 0, (-1 * days))
-	latest := time.Now().AddDate(0, 0, (-1 * skip))
 
 	c.DB.Select("country, created_at").
 		Where("created_at > ?", earliest).
