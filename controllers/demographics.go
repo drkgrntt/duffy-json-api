@@ -137,17 +137,18 @@ func (c *DemographicController) GetDomesticTallies(ctx *gin.Context) {
 
 	c.DB.Select("state, created_at").
 		Where("country = ?", "US").
+		Where("state != ?", "New York").
 		Where("created_at >= ?", earliest).
 		Where("created_at < ?", latest).
 		Find(&analytics)
 
-	response := make(map[string]map[string]int)
+	response := make(map[string]map[string]float64)
 
 	for _, analytic := range analytics {
 		date := utils.FormatDate(analytic.CreatedAt)
 		_, ok := response[date]
 		if !ok {
-			response[date] = make(map[string]int)
+			response[date] = make(map[string]float64)
 		}
 		val := response[date]
 
@@ -167,18 +168,18 @@ func (c *DemographicController) GetDomesticTallies(ctx *gin.Context) {
 		}
 	}
 
-	if shareThreshold > 0 {
-		for date, info := range response {
-			total := 0
-			for _, count := range info {
-				total += count
-			}
+	for date, info := range response {
+		total := 0.0
+		for _, count := range info {
+			total += count
+		}
 
-			for state, count := range info {
-				share := (float64(count) / float64(total)) * 100
-				if share < float64(shareThreshold) {
-					delete(response[date], state)
-				}
+		for country, count := range info {
+			share := (count / total) * 100
+			if shareThreshold > 0 && share < float64(shareThreshold) {
+				delete(response[date], country)
+			} else {
+				response[date][country] = share
 			}
 		}
 	}
@@ -197,13 +198,13 @@ func (c *DemographicController) GetInternationalTallies(ctx *gin.Context) {
 		Where("created_at < ?", latest).
 		Find(&analytics)
 
-	response := make(map[string]map[string]int)
+	response := make(map[string]map[string]float64)
 
 	for _, analytic := range analytics {
 		date := utils.FormatDate(analytic.CreatedAt)
 		_, ok := response[date]
 		if !ok {
-			response[date] = make(map[string]int)
+			response[date] = make(map[string]float64)
 		}
 		val := response[date]
 
@@ -223,18 +224,18 @@ func (c *DemographicController) GetInternationalTallies(ctx *gin.Context) {
 		}
 	}
 
-	if shareThreshold > 0 {
-		for date, info := range response {
-			total := 0
-			for _, count := range info {
-				total += count
-			}
+	for date, info := range response {
+		total := 0.0
+		for _, count := range info {
+			total += count
+		}
 
-			for country, count := range info {
-				share := (float64(count) / float64(total)) * 100
-				if share < float64(shareThreshold) {
-					delete(response[date], country)
-				}
+		for country, count := range info {
+			share := (count / total) * 100
+			if shareThreshold > 0 && share < float64(shareThreshold) {
+				delete(response[date], country)
+			} else {
+				response[date][country] = share
 			}
 		}
 	}

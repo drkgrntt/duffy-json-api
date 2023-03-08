@@ -18,4 +18,7 @@ func (c *HotelPriceRouteController) HotelPriceRoutes(rg *gin.RouterGroup) {
 	router.GET("/", c.hotelPriceController.GetHotelPrices)
 	router.GET("/today", c.hotelPriceController.GetTodaysAverage)
 	router.GET("/week", c.hotelPriceController.GetThisWeeksAverage)
+
+	tallies := router.Group("tallies")
+	tallies.GET("/", c.hotelPriceController.GetHotelPriceTallies)
 }
