@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -279,7 +278,6 @@ func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 		}
 
 		if !isShow {
-			log.Println(date, refForAverages[date])
 			refForAverages[date]["all"]["price"] += show.AveragePrice()
 			refForAverages[date]["all"]["showCount"]++
 		}
