@@ -31,18 +31,23 @@ func (c *SalesController) GetTicketSales(ctx *gin.Context) {
 
 	response := make(map[string]map[string]int)
 
+	i := 0
+	for {
+		date := earliest.AddDate(0, 0, i)
+		if date.After(latest) {
+			break
+		}
+		formattedDate := utils.FormatDate(date)
+		response[formattedDate] = make(map[string]int)
+		response[formattedDate]["all"] = 0
+		for _, location := range locations {
+			response[formattedDate][strings.ToLower(location)] = 0
+		}
+		i++
+	}
+
 	for _, salesDay := range salesDays {
 		date := utils.FormatDate(salesDay.Date)
-
-		_, ok := response[date]
-		if !ok {
-			response[date] = make(map[string]int)
-			response[date]["all"] = 0
-
-			for _, location := range locations {
-				response[date][strings.ToLower(location)] = 0
-			}
-		}
 
 		response[date]["all"] += salesDay.TicketsSold
 
