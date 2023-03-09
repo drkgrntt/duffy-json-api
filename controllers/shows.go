@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -184,7 +185,9 @@ func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 		Preload("Listings", "broadway = ?", true).
 		Find(&shows)
 
-	response := make(map[string]map[string]models.PriceRange)
+	response := make(map[string]map[string]map[string]float64)
+
+	refForAverages := make(map[string]map[string]map[string]float64)
 
 	for _, show := range shows {
 		show.Listings = utils.Filter(show.Listings, func(listing *models.Listing, i int, listings []*models.Listing) bool {
@@ -195,11 +198,27 @@ func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 
 		val, ok := response[date]
 		if !ok {
-			response[date] = make(map[string]models.PriceRange)
+			response[date] = make(map[string]map[string]float64)
+
 			val = response[date]
+			val["all"] = make(map[string]float64)
+			val["all"]["low"] = 0
+			val["all"]["high"] = 0
+
+			refForAverages[date] = make(map[string]map[string]float64)
+			refForAverages[date]["all"] = make(map[string]float64)
+			refForAverages[date]["all"]["price"] = 0
+			refForAverages[date]["all"]["showCount"] = 0
+
 			for _, productionId := range productionIds {
 				prodId := fmt.Sprint(productionId)
-				response[date][prodId] = models.PriceRange{}
+				response[date][prodId] = make(map[string]float64)
+				response[date][prodId]["low"] = 0
+				response[date][prodId]["high"] = 0
+
+				refForAverages[date][prodId] = make(map[string]float64)
+				refForAverages[date][prodId]["price"] = 0
+				refForAverages[date][prodId]["showCount"] = 0
 			}
 		}
 
@@ -218,7 +237,7 @@ func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 		}
 
 		all := val["all"]
-		var showRange models.PriceRange
+		showRange := make(map[string]float64)
 		isShow := false
 
 		// Handle individual productions
@@ -226,30 +245,53 @@ func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 			if show.ProductionId != productionId {
 				continue
 			}
-			showRange = val[fmt.Sprint(show.ProductionId)]
+			prodId := fmt.Sprint(show.ProductionId)
+			showRange = val[prodId]
 			isShow = true
+
+			averageShowPrice := show.AveragePrice()
+			refForAverages[date][prodId]["price"] += averageShowPrice
+			refForAverages[date][prodId]["showCount"]++
+			refForAverages[date]["all"]["price"] += averageShowPrice
+			refForAverages[date]["all"]["showCount"]++
 		}
 
 		for _, listing := range show.Listings {
 			priceRange := listing.ParsedPriceRange()
-			if all.Low == 0 || all.Low > priceRange.Low {
-				all.Low = priceRange.Low
+			if all["low"] == 0 || all["low"] > priceRange.Low {
+				all["low"] = priceRange.Low
 			}
-			if all.High < priceRange.High {
-				all.High = priceRange.High
+			if all["high"] < priceRange.High {
+				all["high"] = priceRange.High
 			}
 
 			if isShow {
-				if showRange.Low == 0 || showRange.Low > priceRange.Low {
-					showRange.Low = priceRange.Low
+				if showRange["low"] == 0 || showRange["low"] > priceRange.Low {
+					showRange["low"] = priceRange.Low
 				}
-				if showRange.High < priceRange.High {
-					showRange.High = priceRange.High
+				if showRange["high"] < priceRange.High {
+					showRange["high"] = priceRange.High
 				}
 				val[fmt.Sprint(show.ProductionId)] = showRange
 			}
 
 			val["all"] = all
+		}
+
+		if !isShow {
+			log.Println(date, refForAverages[date])
+			refForAverages[date]["all"]["price"] += show.AveragePrice()
+			refForAverages[date]["all"]["showCount"]++
+		}
+	}
+
+	for date, averages := range refForAverages {
+		for id, info := range averages {
+			var average float64
+			if info["showCount"] > 0 {
+				average = info["price"] / info["showCount"]
+			}
+			response[date][id]["average"] = average
 		}
 	}
 

@@ -30,7 +30,7 @@ type PriceRange struct {
 	High float64 `json:"high"`
 }
 
-func (l Listing) ParsedPriceRange() PriceRange {
+func (l *Listing) ParsedPriceRange() PriceRange {
 	pieces := strings.Split(l.PriceRange, "$")
 	prices := strings.Split(pieces[len(pieces)-1], "-")
 	var low float64
@@ -48,7 +48,7 @@ func (l Listing) ParsedPriceRange() PriceRange {
 	return priceRange
 }
 
-func (l Listing) IsWithinParams(
+func (l *Listing) IsWithinParams(
 	minPrice float64,
 	maxPrice float64,
 	minDiscount float64,

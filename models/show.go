@@ -15,3 +15,14 @@ type Show struct {
 
 	Listings []*Listing `gorm:"foreignKey:ShowId" json:"listings,omitempty"`
 }
+
+func (s *Show) AveragePrice() float64 {
+	var total float64
+	for _, listing := range s.Listings {
+		priceRange := listing.ParsedPriceRange()
+		total += priceRange.High
+		total += priceRange.Low
+	}
+	average := total / float64(len(s.Listings)*2)
+	return average
+}
