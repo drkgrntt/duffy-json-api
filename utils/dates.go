@@ -5,5 +5,6 @@ import (
 )
 
 func FormatDate(date time.Time) string {
-	return date.Format("01-02-2006")
+	location, _ := time.LoadLocation("America/New_York")
+	return date.In(location).Format("01-02-2006")
 }
