@@ -178,7 +178,7 @@ func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 
 	var shows []models.Show
 
-	c.DB.Where("showtime > ?", earliest).
+	c.DB.Where("showtime >= ?", earliest).
 		Where("showtime < ?", latest).
 		Joins("Production").
 		Preload("Listings", "broadway = ?", true).
@@ -283,14 +283,34 @@ func (c *ShowController) GetPriceRangeTallies(ctx *gin.Context) {
 		}
 	}
 
+	var salesDays []models.TktsSalesDay
+
+	c.DB.Where("date >= ?", earliest).
+		Where("date < ?", latest).
+		Find(&salesDays)
+
 	for date, averages := range refForAverages {
 		for id, info := range averages {
 			var average float64
 			if info["showCount"] > 0 {
 				average = info["price"] / info["showCount"]
 			}
-			response[date][id]["average"] = average
+			response[date][id]["averageListed"] = average
 		}
+
+		revenue := 0.0
+		ticketSales := 0.0
+		utils.ForEach(salesDays, func(salesDay models.TktsSalesDay, i int, s []models.TktsSalesDay) {
+			if utils.FormatDate(salesDay.Date) == date {
+				revenue += salesDay.SalesTotal
+				ticketSales += float64(salesDay.TicketsSold)
+			}
+		})
+		averagePaid := 0.0
+		if ticketSales > 0 {
+			averagePaid = revenue / ticketSales
+		}
+		response[date]["all"]["averagePaid"] = averagePaid
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"priceRanges": response}})
